@@ -1,44 +1,17 @@
-require './tire_user_model.rb'
 require 'benchmark'
 require 'benchmark/ips'
+require './tire_user_model.rb'
+
+#
+# User.tire.index.create(:mappings => User.tire.mapping_to_hash, :settings => User.tire.settings)
+#User.tire.index.reindex('users',:mappings => User.tire.mapping_to_hash,:settings => User.tire.settings)
+# User.tire.index.delete
 User.create! name: 'Alex Kovtunov'
 User.create! name: 'Alexander Kovtunov'
-User.create! name: 'Alexeus Kovtunov'
-User.create! name: 'Alexandr Kovtunov'
-User.create! name: 'Alex Bierbrauer'
-User.create! name: 'John Bierbrauer'
-User.create! name: 'Alexeus Bierbrauer'
-User.create! name: 'Alexandr Bierbrauer'
-User.create! name: 'Alexan Somesecondname'
-User.create! name: 'Alexandre Somesecondname'
-User.create! name: 'Violett Somesecondname'
-User.create! name: 'Sedrick Somesecondname'
 User.create! name: 'Marco Polo'
 User.create! name: 'Emma Watson'
 User.create! name: 'Leonardo Di Caprio'
 User.create! name: 'Colin mcRye'
-
-# Benchmark.ips do |x|
-#   x.report('simple search') { User.simple_search({search_query:"Alex"}) }
-#   x.report('full search') { User.search({search_query:"Alex"}) }
-#   x.report('simple suggestion') { User.simple_suggestions({search_query:"Alex"}) }
-#   x.report('full suggestion') { User.suggestions({search_query:"Alex"}) }
-#   x.report('simple_search_with_suggestions'){ User.simple_search_with_suggestions({search_query:"Alex"}) }
-# end
-
-Benchmark.bm do |x|
-  x.report('simple search') { User.simple_search({search_query:"Alex"}) }
-  x.report('full search') { User.search({search_query:"Alex"}) }
-  x.report('simple suggestion') { User.simple_suggestions({search_query:"Alex"}) }
-  x.report('full suggestion') { User.suggestions({search_query:"Alex"}) }
-  x.report('simple_search_with_suggestions'){ User.simple_search_with_suggestions({search_query:"Alex"}) }
-end
-
-# search = User.search({search_query:"alexandar koftunov"})
-# puts "Real ones:"
-# puts search[:real].results.inspect
-# puts "Possible ones:"
-# puts search[:possible].results.inspect
 
 search = User.simple_search_with_suggestions({search_query:"Alexandir"})
 puts "Search returned:\n"
@@ -54,6 +27,19 @@ search.suggestions.each do |name, options|
     end 
   end
 end
+
+User.all.each {|usr| usr.delete}
+
+# suggestions = User.simple_suggestions({search_query:"Alex"})
+# puts "Available corrections: #{suggestions.results.texts.join(', ')}"
+# Benchmark.ips do |x|
+#   x.report('simple search') { User.simple_search({search_query:"Alex"}) }
+#   x.report('full search') { User.search({search_query:"Alex"}) }
+#   x.report('simple suggestion') { User.simple_suggestions({search_query:"Alex"}) }
+#   x.report('full suggestion') { User.suggestions({search_query:"Alex"}) }
+#   x.report('simple_search_with_suggestions'){ User.simple_search_with_suggestions({search_query:"Alex"}) }
+# end
+
 # suggestions = User.suggestions({search_query:"Alex"})
 # suggestions.results.suggestions.each do |name, options|
 #   puts "Suggestion returned for #{name}:\n"
@@ -62,6 +48,21 @@ end
 #   end
 # end
 
+# search = User.search({search_query:"alexandar koftunov"})
+# puts "Real ones:"
+# puts search[:real].results.inspect
+# puts "Possible ones:"
+# puts search[:possible].results.inspect
 
-# suggestions = User.simple_suggestions({search_query:"Alex"})
-# puts "Available corrections: #{suggestions.results.texts.join(', ')}"
+
+
+# Benchmark.bm do |x|
+#   x.report('simple search') { User.simple_search({search_query:"Alex"}) }
+#   x.report('full search') { User.search({search_query:"Alex"}) }
+#   x.report('simple suggestion') { User.simple_suggestions({search_query:"Alex"}) }
+#   x.report('full suggestion') { User.suggestions({search_query:"Alex"}) }
+#   x.report('simple_search_with_suggestions'){ User.simple_search_with_suggestions({search_query:"Alex"}) }
+# end
+
+
+

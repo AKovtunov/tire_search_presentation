@@ -14,26 +14,20 @@ class User < ActiveRecord::Base;
 
   mapping do
     indexes :name, :type => 'string'
+    indexes :random_address, :type => 'string'
+    indexes :new_rand, :type => 'string'
   end
 
-  def self.search(params)
-    results = Hash.new
-    original_query = params[:search_query].tr('^A-Za-z0-9 ', '')
-    params[:search_query] = original_query.split(" ").map { |a| a<<("*") }.join(" ")
-    results[:real] = tire.search(load: true) do
-      query { string params[:search_query], default_operator: "AND" } if params[:search_query].present?
-      sort do
-        by :name
-      end
-    end
-    params[:search_query] = original_query.split(" ").map { |a| a<<('~') }.join(" ")
-    results[:possible] = tire.search(load: true) do
-      query { string params[:search_query], default_operator: "AND" } if params[:search_query].present?
-      sort do
-        by :name
-      end
-    end
-    return results
+  def to_indexed_json
+    to_json(methods: [:random_address, :new_rand])
+  end
+
+  def random_address 
+    "Kirova st., house ##{Random.rand(100)}"
+  end
+
+  def new_rand
+    "H #{Random.rand(100)}"
   end
 
   def self.simple_search(params)
@@ -44,6 +38,18 @@ class User < ActiveRecord::Base;
       sort do
         by :name
       end
+    end
+  end
+
+  def self.simple_suggestions(params)
+    Tire.suggest('users') do
+      # Notice that for standalone API, the block method is `suggestion` rather than `suggest`:
+      #
+      suggestion :term_suggest do
+        text params[:search_query]
+        term :name, size: 3, sort: 'frequency'
+      end
+
     end
   end
 
@@ -85,17 +91,6 @@ class User < ActiveRecord::Base;
 #
 
 
-  def self.simple_suggestions(params)
-    Tire.suggest('users') do
-      # Notice that for standalone API, the block method is `suggestion` rather than `suggest`:
-      #
-      suggestion :term_suggest do
-        text params[:search_query]
-        term :name, size: 3, sort: 'frequency'
-      end
-
-    end
-  end
 
   def self.simple_search_with_suggestions(params)
     original_query = params[:search_query].tr('^A-Za-z0-9 ', '')
@@ -115,4 +110,32 @@ class User < ActiveRecord::Base;
     end
   end
 
+  def self.search(params)
+    results = Hash.new
+    original_query = params[:search_query].tr('^A-Za-z0-9 ', '')
+    params[:search_query] = original_query.split(" ").map { |a| a<<("*") }.join(" ")
+    results[:real] = tire.search(load: true) do
+      query { string params[:search_query], default_operator: "AND" } if params[:search_query].present?
+      sort do
+        by :name
+      end
+    end
+    params[:search_query] = original_query.split(" ").map { |a| a<<('~') }.join(" ")
+    results[:possible] = tire.search(load: true) do
+      query { string params[:search_query], default_operator: "AND" } if params[:search_query].present?
+      sort do
+        by :name
+      end
+    end
+    return results
+  end
+
+  
+
+  def self.reset_index
+    Tire.index 'users' do
+      delete
+      create
+    end
+  end
 end
