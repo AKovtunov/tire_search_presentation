@@ -12,7 +12,9 @@ User.create! name: 'Marco Polo'
 User.create! name: 'Emma Watson'
 User.create! name: 'Leonardo Di Caprio'
 User.create! name: 'Colin mcRye'
-
+User.all.each do |user|
+  puts "Created user #{user}"
+end
 search = User.simple_search_with_suggestions({search_query:"Alexandir"})
 puts "Search returned:\n"
 search.results.each do |result|
@@ -28,7 +30,7 @@ search.suggestions.each do |name, options|
   end
 end
 
-User.all.each {|usr| usr.delete}
+User.all.each {|usr| usr.delete} #need for reindex tire
 
 # suggestions = User.simple_suggestions({search_query:"Alex"})
 # puts "Available corrections: #{suggestions.results.texts.join(', ')}"
